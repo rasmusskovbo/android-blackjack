@@ -1,12 +1,11 @@
 <resources>
-    <string name="app_name">blackjack</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="app_name">The Card Counter</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="hit_button_value">Hit !</string>
     <string name="stand_button_value">Stand</string>
-    <string name="new_round_button_value">New Round</string>
+    <string name="new_round_button_value">Deal Cards</string>
     <string name="cards_left_text">Cards left in the deck:</string>
     <string name="current_count_text">Current deck count</string>
+    <string name="current_bet_text">Current Bet:</string>
 </resources>

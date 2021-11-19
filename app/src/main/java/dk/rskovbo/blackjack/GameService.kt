@@ -2,24 +2,31 @@ package dk.rskovbo.blackjack
 
 import dk.rskovbo.blackjack.model.Card
 import dk.rskovbo.blackjack.model.CardDeckDrawPile
+import dk.rskovbo.blackjack.model.GameSettings
 
-class GameService {
+class GameService() {
 
     var playerMoney = 100
     var currentBet = 10
-    var shoesToPlay = 3
+    var betChangeSize = 10
 
+    var isMidGame = false
     var isPlayersTurn: Boolean = true
     var playerCardsPlayed = 0
     var dealerCardsPlayed = 0
-
     var currentPlayerCount = 0
     var currentDealerCount = 0
 
-    var cardDeck = CardDeckDrawPile(shoesToPlay)
+    var currentDeckCount = 0
+    var cardDeck: CardDeckDrawPile
+
+    init {
+        cardDeck = CardDeckDrawPile(GameSettings.amountOfDecksToPlay)
+    }
 
     fun resetCardDeck() {
-        cardDeck = CardDeckDrawPile(shoesToPlay)
+        cardDeck = CardDeckDrawPile(GameSettings.amountOfDecksToPlay)
+        currentDeckCount = 0
     }
 
     fun resetRoundStats() {
@@ -28,6 +35,7 @@ class GameService {
         currentPlayerCount = 0
         currentDealerCount = 0
         isPlayersTurn = true
+        isMidGame = false
     }
 
     fun drawCard(): Card {
@@ -42,6 +50,8 @@ class GameService {
             currentDealerCount += cardToDraw.countValue
         }
 
+        currentDeckCount += cardToDraw.deckCountValue
+
         return cardToDraw
     }
 
@@ -52,11 +62,13 @@ class GameService {
         dealerCardsPlayed ++
         currentDealerCount += cardToDraw.countValue
 
+        currentDeckCount += cardToDraw.deckCountValue
+
         return cardToDraw
     }
 
     private fun aceCountsFor11(cardToDraw: Card) {
-        if (cardToDraw.isAce() && currentPlayerCount < 11) {
+        if ((cardToDraw.isAce() && currentPlayerCount < 11) || (cardToDraw.isAce() && currentDealerCount < 11)) {
             cardToDraw.countValue = 11
         }
     }
@@ -125,5 +137,31 @@ class GameService {
             true -> playerMoney += currentBet
             else -> playerMoney -= currentBet
         }
+    }
+
+    fun raiseBet(): Boolean {
+        return if ((currentBet + betChangeSize) <= playerMoney) {
+            currentBet += betChangeSize
+            true
+        } else {
+            false
+        }
+    }
+
+    fun lowerBet(): Boolean {
+        return if ((currentBet - betChangeSize) > 0) {
+            currentBet -= betChangeSize
+            true
+        } else {
+            false
+        }
+    }
+
+    fun isPlayerBroke(): Boolean {
+        return playerMoney <= 0
+    }
+
+    fun isCurrentBetHigherThanPlayerMoney(): Boolean {
+        return currentBet > playerMoney
     }
 }

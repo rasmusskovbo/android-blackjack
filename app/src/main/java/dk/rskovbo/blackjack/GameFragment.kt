@@ -4,11 +4,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import dk.rskovbo.blackjack.databinding.FragmentGameBinding
+import dk.rskovbo.blackjack.model.GameDataViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -23,14 +26,20 @@ class GameFragment : Fragment() {
 
     private val gameService: GameService = GameService()
 
+    // Cards
     val dealerCards: ArrayList<ImageView> = ArrayList()
     val playerCards: ArrayList<ImageView> = ArrayList()
-    lateinit var cardsLeftInDrawPile: TextView
-    lateinit var currentPlayerCount: TextView
-    lateinit var currentDealerCount: TextView
-    lateinit var playerMoney: TextView
-    private lateinit var button: Button
 
+    // TextViews
+    lateinit var cardsLeftInDrawPile: TextView
+    lateinit var playerMoney: TextView
+    lateinit var currentBet: TextView
+    lateinit var currentDeckCount: TextView
+    lateinit var gameStatus: TextView
+
+
+    // Animation
+    private var dealersTurnDelay: Long = 2_000
     private var dealerDrawingSpeed: Long = 1_000
 
     override fun onCreateView(
@@ -54,28 +63,42 @@ class GameFragment : Fragment() {
             render()
         }
 
+        binding.playerStopDraw.setOnClickListener {
+            standOnCardsForPlayer()
+        }
+
         binding.newRound.setOnClickListener {
             restartRound()
             render()
         }
 
-        binding.playerStopDraw.setOnClickListener {
-            standOnCardsForPlayer()
+
+        binding.raiseBetButton.setOnClickListener{
+            if (gameService.raiseBet()) gameStatus.text = "Raised bet" else gameStatus.text = "Not enough money!"
+           render()
         }
+
+        binding.lowerBetButton.setOnClickListener{
+            if (gameService.lowerBet()) gameStatus.text = "Lowered bet" else gameStatus.text = "Can't lower bet further"
+            render()
+        }
+
+        toggleButtonVisibility()
     }
 
     private fun initTextViews() {
         // Cache Textviews
         cardsLeftInDrawPile = binding.cardsLeftInDrawPile
-        currentPlayerCount = binding.currentPlayerCount
-        currentDealerCount = binding.currentDealerCount
         playerMoney = binding.playerMoney
+        currentBet = binding.currentBet
+        currentDeckCount = binding.currentDeckCount
+        gameStatus = binding.gameStatusText
 
         // Assign values
         cardsLeftInDrawPile.text = gameService.cardDeck.getDrawPile().size.toString()
-        currentPlayerCount.text = "0"
-        currentDealerCount.text = "0"
         playerMoney.text = gameService.playerMoney.toString()
+        currentBet.text = gameService.currentBet.toString()
+        currentDeckCount.text = "0"
     }
 
     private fun initCardViews() {
@@ -96,15 +119,17 @@ class GameFragment : Fragment() {
 
     private fun render() {
         cardsLeftInDrawPile.text = gameService.cardDeck.getDrawPile().size.toString()
-        currentPlayerCount.text = gameService.currentPlayerCount.toString()
-        currentDealerCount.text = gameService.currentDealerCount.toString()
+        currentDeckCount.text = gameService.currentDeckCount.toString()
         playerMoney.text = gameService.playerMoney.toString()
+        currentBet.text = gameService.currentBet.toString()
+        toggleButtonVisibility()
     }
 
     // When Stop button is pressed
     private fun standOnCardsForPlayer() {
         if (gameService.isPlayersTurn) {
             gameService.isPlayersTurn = false
+            gameStatus.text = "Dealer's turn!"
             resolveDealersTurn()
         }
     }
@@ -115,6 +140,17 @@ class GameFragment : Fragment() {
         if (gameService.isPlayersTurn) {
             val card = gameService.drawCard()
             playerCards[gameService.playerCardsPlayed - 1].setImageResource(card.cardDrawableId)
+
+            if (gameService.playerHasBlackjack() && gameService.dealerCanDraw()) {
+                gameStatus.text = "BLACKJACK! Dealer's turn"
+            }
+            if (gameService.playerHasExceeded21()) {
+                gameStatus.text = "Bust! Try again"
+                gameService.resolveBets()
+                gameService.isMidGame = false
+                toggleButtonVisibility()
+            }
+
             if (!gameService.playerCanContinue() && gameService.dealerCanDraw()) resolveDealersTurn()
         }
     }
@@ -127,10 +163,26 @@ class GameFragment : Fragment() {
     // When it's the dealers turn
     private fun resolveDealersTurn() {
         GlobalScope.launch(Dispatchers.Main) {
+            delay(dealersTurnDelay)
             while (gameService.dealerCanDraw()) {
-                    delay(dealerDrawingSpeed)
-                    drawAndRenderCardForDealer()
-                    render()
+                gameStatus.text = "Dealer's drawing!"
+                delay(dealerDrawingSpeed)
+                drawAndRenderCardForDealer()
+                render()
+            }
+
+            if (gameService.didPlayerWin()) {
+                if (gameService.dealerHasExceeded21()) {
+                    gameStatus.text = "Dealer bust! You win!"
+                } else {
+                    gameStatus.text = "You win! Your " + gameService.currentPlayerCount + " pts beat the dealer's " + gameService.currentDealerCount + " pts"
+                }
+            } else {
+                gameStatus.text = "You lose. Dealer's " + gameService.currentDealerCount + " pts beat or was equal to your " + gameService.currentPlayerCount + " pts"
+            }
+            gameService.isMidGame = false
+            if (gameService.isPlayerBroke()) {
+                // TODO small delay to show lost hand then transition to game over screen
             }
             gameService.resolveBets()
             render()
@@ -138,13 +190,36 @@ class GameFragment : Fragment() {
     }
 
     private fun startRound() {
-        drawAndRenderCardForPlayer()
-        drawAndRenderCardForPlayer()
-        val card1 = gameService.drawCardForDealerSetup()
-        dealerCards[gameService.dealerCardsPlayed-1].setImageResource(card1.cardDrawableId)
+        gameStatus.text = ""
+        gameService.isMidGame = true
+        if (gameService.isCurrentBetHigherThanPlayerMoney()) {
+            gameService.currentBet = gameService.playerMoney
+            currentBet.text = gameService.currentBet.toString()
+        }
+        toggleButtonVisibility()
 
-        val card2 = gameService.drawCardForDealerSetup()
-        dealerCards[gameService.dealerCardsPlayed-1].setImageResource(card2.cardDrawableId)
+        drawAndRenderCardForPlayer()
+        drawAndRenderCardForPlayer()
+
+        val card = gameService.drawCardForDealerSetup()
+        dealerCards[gameService.dealerCardsPlayed-1].setImageResource(card.cardDrawableId)
+
+    }
+
+    private fun toggleButtonVisibility() {
+        if (gameService.isMidGame) {
+            binding.drawPlayerCard.isVisible = true
+            binding.playerStopDraw.isVisible = true
+            binding.newRound.isVisible = false
+            binding.raiseBetButton.isVisible = false
+            binding.lowerBetButton.isVisible = false
+        } else {
+            binding.drawPlayerCard.isVisible = false
+            binding.playerStopDraw.isVisible = false
+            binding.newRound.isVisible = true
+            binding.raiseBetButton.isVisible = true
+            binding.lowerBetButton.isVisible = true
+        }
     }
 
     private fun restartRound() {

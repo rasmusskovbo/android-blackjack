@@ -2,7 +2,6 @@ package dk.rskovbo.blackjack.model
 
 import kotlin.random.Random
 
-// TODO Holds carddecks (1, 3, 5, 7)
 class CardDeckDrawPile(cardDecksInPlay: Int) {
 
     private var drawPile: ArrayList<Card> = ArrayList()
