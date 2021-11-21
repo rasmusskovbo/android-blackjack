@@ -1,8 +1,7 @@
-package dk.rskovbo.blackjack
+package dk.rskovbo.blackjack.game
 
 import dk.rskovbo.blackjack.model.Card
 import dk.rskovbo.blackjack.model.CardDeckDrawPile
-import dk.rskovbo.blackjack.model.GameSettings
 
 class GameService() {
 
@@ -21,11 +20,12 @@ class GameService() {
     var cardDeck: CardDeckDrawPile
 
     init {
-        cardDeck = CardDeckDrawPile(GameSettings.amountOfDecksToPlay)
+        cardDeck = CardDeckDrawPile(GameStats.amountOfDecksToPlay)
+        // todo reset gamestats
     }
 
     fun resetCardDeck() {
-        cardDeck = CardDeckDrawPile(GameSettings.amountOfDecksToPlay)
+        cardDeck = CardDeckDrawPile(GameStats.amountOfDecksToPlay)
         currentDeckCount = 0
     }
 
@@ -157,11 +157,19 @@ class GameService() {
         }
     }
 
+    fun didPlayerWinAnyMoney() {
+        if (playerMoney > 100) GameStats.finalWinnings = playerMoney - 100 else GameStats.finalWinnings = 0
+    }
+
     fun isPlayerBroke(): Boolean {
         return playerMoney <= 0
     }
 
     fun isCurrentBetHigherThanPlayerMoney(): Boolean {
         return currentBet > playerMoney
+    }
+    
+    fun isEnoughCardsToPlayARound(): Boolean {
+        return cardDeck.getDrawPile().size >= 10
     }
 }

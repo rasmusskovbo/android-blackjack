@@ -1,5 +1,6 @@
 package dk.rskovbo.blackjack.model
 
+import dk.rskovbo.blackjack.game.GameStats
 import kotlin.random.Random
 
 class CardDeckDrawPile(cardDecksInPlay: Int) {
@@ -17,6 +18,7 @@ class CardDeckDrawPile(cardDecksInPlay: Int) {
     fun drawCard(): Card {
         val card = drawPile[randomizer.nextInt(drawPile.size)]
         drawPile.remove(card)
+        GameStats.cardsPlayed++
         return card
     }
 

@@ -1,4 +1,4 @@
-package dk.rskovbo.blackjack
+package dk.rskovbo.blackjack.activities
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -8,10 +8,11 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
+import dk.rskovbo.blackjack.R
 import dk.rskovbo.blackjack.databinding.FragmentGameBinding
-import dk.rskovbo.blackjack.model.GameDataViewModel
+import dk.rskovbo.blackjack.game.GameService
+import dk.rskovbo.blackjack.game.GameStats
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
@@ -136,7 +137,6 @@ class GameFragment : Fragment() {
 
     // When Draw Card button is pressed
     private fun drawAndRenderCardForPlayer() {
-        // Disable button if it's not the player's turn
         if (gameService.isPlayersTurn) {
             val card = gameService.drawCard()
             playerCards[gameService.playerCardsPlayed - 1].setImageResource(card.cardDrawableId)
@@ -145,9 +145,11 @@ class GameFragment : Fragment() {
                 gameStatus.text = "BLACKJACK! Dealer's turn"
             }
             if (gameService.playerHasExceeded21()) {
-                gameStatus.text = "Bust! Try again"
+                gameStatus.text = "Bust! You lose"
                 gameService.resolveBets()
                 gameService.isMidGame = false
+                redirectIfPlayerIsBroke()
+                redirectIfNotEnoughCardsLeft()
                 toggleButtonVisibility()
             }
 
@@ -178,19 +180,24 @@ class GameFragment : Fragment() {
                     gameStatus.text = "You win! Your " + gameService.currentPlayerCount + " pts beat the dealer's " + gameService.currentDealerCount + " pts"
                 }
             } else {
-                gameStatus.text = "You lose. Dealer's " + gameService.currentDealerCount + " pts beat or was equal to your " + gameService.currentPlayerCount + " pts"
+                if (gameService.dealerHasBlackjack()) {
+                   gameStatus.text = "Dealer's got BLACKJACK! You lose."
+                } else {
+                    gameStatus.text =
+                        "You lose. Dealer's " + gameService.currentDealerCount + " pts beat or was equal to your " + gameService.currentPlayerCount + " pts"
+                }
             }
             gameService.isMidGame = false
-            if (gameService.isPlayerBroke()) {
-                // TODO small delay to show lost hand then transition to game over screen
-            }
             gameService.resolveBets()
             render()
+            redirectIfPlayerIsBroke()
+            redirectIfNotEnoughCardsLeft()
         }
     }
 
     private fun startRound() {
         gameStatus.text = ""
+        GameStats.handsPlayed++
         gameService.isMidGame = true
         if (gameService.isCurrentBetHigherThanPlayerMoney()) {
             gameService.currentBet = gameService.playerMoney
@@ -219,6 +226,36 @@ class GameFragment : Fragment() {
             binding.newRound.isVisible = true
             binding.raiseBetButton.isVisible = true
             binding.lowerBetButton.isVisible = true
+        }
+    }
+
+    private fun redirectIfPlayerIsBroke() {
+        if (gameService.isPlayerBroke()) {
+            binding.gameButtonsLayout.isVisible = false
+            gameService.isMidGame = false
+            GameStats.reasonForGameOver = "You've lost all your money!"
+            GlobalScope.launch(Dispatchers.Main) {
+                delay(2000)
+                gameStatus.text = "You've run out of money!"
+                delay(2000)
+                GameStats.finalWinnings = 0
+                findNavController().navigate(R.id.action_gameFragment_to_showScoreFragment)
+            }
+        }
+    }
+
+    private fun redirectIfNotEnoughCardsLeft() {
+        if (!gameService.isEnoughCardsToPlayARound()) {
+            binding.gameButtonsLayout.isVisible = false
+            gameService.isMidGame = false
+            GameStats.reasonForGameOver = "No more cards in the deck"
+            GlobalScope.launch(Dispatchers.Main) {
+                delay(2000)
+                gameStatus.text = "No cards left in the draw pile - Game has ended."
+                delay(2000)
+                gameService.didPlayerWinAnyMoney()
+                findNavController().navigate(R.id.action_gameFragment_to_showScoreFragment)
+            }
         }
     }
 

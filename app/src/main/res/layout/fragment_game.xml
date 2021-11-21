@@ -7,7 +7,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:background="@drawable/background"
     android:theme="@style/ThemeOverlay.Blackjack.FullscreenContainer"
-    tools:context=".GameFragment">
+    tools:context=".activities.GameFragment">
 
     <!-- The primary full-screen view. This can be replaced with whatever view
          is needed to present your content, e.g. VideoView, SurfaceView,
@@ -104,7 +104,7 @@
         <LinearLayout
             android:id="@+id/center_text_section"
             android:layout_width="match_parent"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
             app:layout_constraintBottom_toTopOf="@id/game_buttons_layout"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -129,7 +129,7 @@
                         android:gravity="center"
                         android:textColor="@color/white"
                         android:layout_width="match_parent"
-                        android:layout_height="50dp">
+                        android:layout_height="wrap_content">
                     </TextView>
                     <TextView
                         android:text="@string/current_count_text"
@@ -138,7 +138,7 @@
                         android:gravity="center"
                         android:textColor="@color/white"
                         android:layout_width="match_parent"
-                        android:layout_height="50dp">
+                        android:layout_height="wrap_content">
                     </TextView>
                 </LinearLayout>
 
@@ -156,7 +156,7 @@
                         android:gravity="center"
                         android:textColor="@color/white"
                         android:layout_width="match_parent"
-                        android:layout_height="50dp">
+                        android:layout_height="wrap_content">
                     </TextView>
                     <TextView
                         android:id="@+id/currentDeckCount"
@@ -166,7 +166,7 @@
                         android:gravity="center"
                         android:textColor="@color/white"
                         android:layout_width="match_parent"
-                        android:layout_height="50dp">
+                        android:layout_height="wrap_content">
                     </TextView>
                 </LinearLayout>
             </LinearLayout>
@@ -298,47 +298,57 @@
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_gravity="end"
-                android:layout_weight="1"
+                android:scaleX="0.7"
+                android:scaleY="0.7"
                 android:src="@drawable/baseline_attach_money_white_36dp">
             </ImageView>
             <TextView
                 android:id="@+id/playerMoney"
                 android:text="9999"
                 android:textAlignment="textStart"
-                android:layout_gravity="start"
+                android:gravity="start"
                 android:textColor="@color/white"
-                android:textSize="36sp"
-                android:layout_weight="1"
+                android:textSize="24sp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
             </TextView>
             <Space
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                android:layout_width="10dp"
                 android:layout_height="match_parent"/>
             <TextView
                 android:text="@string/current_bet_text"
-                android:textSize="18sp"
+                android:textSize="12sp"
                 android:textColor="@color/white"
                 android:gravity="center"
                 android:layout_width="70dp"
                 android:layout_height="match_parent"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:scaleX="0.7"
+                android:scaleY="0.7"
+                android:src="@drawable/baseline_attach_money_white_36dp">
+            </ImageView>
             <TextView
                 android:id="@+id/currentBet"
                 android:text="9999"
                 android:textColor="@color/white"
-                android:textSize="36sp"
-                android:layout_width="90dp"
-                android:layout_height="match_parent"/>
+                android:textAlignment="textStart"
+                android:gravity="center"
+                android:textSize="24sp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"/>
 
             <Button
+                android:layout_marginStart="20dp"
                 android:id="@+id/lower_bet_button"
-                android:layout_width="75dp"
+                android:layout_width="60dp"
                 android:layout_height="wrap_content"
                 android:background="@drawable/baseline_keyboard_arrow_down_white_48dp"/>
             <Button
                 android:id="@+id/raise_bet_button"
-                android:layout_width="75dp"
+                android:layout_width="60dp"
                 android:layout_height="match_parent"
                 android:background="@drawable/baseline_keyboard_arrow_up_white_48dp"/>
 

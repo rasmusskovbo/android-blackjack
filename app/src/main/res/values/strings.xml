@@ -1,11 +1,18 @@
 <resources>
     <string name="app_name">The Card Counter</string>
     <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
-    <string name="hit_button_value">Hit !</string>
+    <string name="hit_button_value">Hit!</string>
     <string name="stand_button_value">Stand</string>
     <string name="new_round_button_value">Deal Cards</string>
     <string name="cards_left_text">Cards left in the deck:</string>
-    <string name="current_count_text">Current deck count</string>
-    <string name="current_bet_text">Current Bet:</string>
+    <string name="current_count_text">Current deck count:</string>
+    <string name="current_bet_text">Current bet:</string>
+    <string name="play_again_button_text">Play Again</string>
+    <string name="main_menu_button_text">Main Menu</string>
+    <string name="winnings_pr_hand_text">Winnings pr hand:</string>
+    <string name="hands_played_text">Hands played:</string>
+    <string name="cards_played_text">Cards played:</string>
+    <string name="final_winnings_text">Final winnings:</string>
+    <string name="game_stats_text">Game Stats:</string>
+    <string name="game_over_text">Game Over</string>
 </resources>

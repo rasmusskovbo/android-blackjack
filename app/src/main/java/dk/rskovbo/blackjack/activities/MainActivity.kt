@@ -1,9 +1,8 @@
-package dk.rskovbo.blackjack
+package dk.rskovbo.blackjack.activities
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import dk.rskovbo.blackjack.model.Card
-import dk.rskovbo.blackjack.model.CardBindings
+import dk.rskovbo.blackjack.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

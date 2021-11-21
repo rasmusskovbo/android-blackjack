@@ -1,4 +1,4 @@
-package dk.rskovbo.blackjack
+package dk.rskovbo.blackjack.activities
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -9,7 +9,8 @@ import android.widget.Button
 import android.widget.SeekBar
 import android.widget.TextView
 import androidx.navigation.fragment.findNavController
-import dk.rskovbo.blackjack.model.GameSettings
+import dk.rskovbo.blackjack.R
+import dk.rskovbo.blackjack.game.GameStats
 
 class MainMenuFragment : Fragment() {
     private lateinit var amountOfDecksView: TextView
@@ -24,7 +25,7 @@ class MainMenuFragment : Fragment() {
         val binding = inflater.inflate(R.layout.fragment_main_menu, container, false)
 
         binding.findViewById<Button>(R.id.new_game).setOnClickListener {
-            GameSettings.amountOfDecksToPlay = amountOfDecks
+            GameStats.amountOfDecksToPlay = amountOfDecks
             findNavController().navigate(R.id.action_mainMenuFragment_to_gameFragment)
         }
 
